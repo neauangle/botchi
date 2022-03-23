@@ -1,0 +1,46 @@
+1. Set up vm
+2. add static public ip
+3. open ssh port on vm
+4. ssh -vvv -T  <username>@<ip>
+5. ssh -i "<path to ssh private key" <username>@<ip>
+6. sudo apt-get install ubuntu-desktop
+
+7.
+	sudo apt-get remove xrdp vnc4server tightvncserver
+	sudo apt-get install tightvncserver
+	sudo apt-get install xrdp
+    Creating a file /etc/X11/Xwrapper.config containing
+		allowed_users = anybody
+
+8. open rdp on vm (recommend disabling this rule after each session)
+
+9. Connect via rdp on azure
+
+10. For dev:
+	sudo apt-get remove nodejs npm
+	sudo apt-get purge nodejs
+	
+	sudo rm -rf /usr/local/bin/npm 
+	sudo rm -rf /usr/local/share/man/man1/node* 
+	sudo rm -rf /usr/local/lib/dtrace/node.d 
+	sudo rm -rf ~/.npm 
+	sudo rm -rf ~/.node-gyp 
+	sudo rm -rf /opt/local/bin/node 
+	sudo rm -rf opt/local/include/node 
+	sudo rm -rf /opt/local/lib/node_modules  
+	sudo rm -rf /usr/local/lib/node*
+	sudo rm -rf /usr/local/include/node*
+	sudo rm -rf /usr/local/bin/node*
+	
+	curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+	
+	#Close and reopen your terminal
+	
+	nvm install node
+	nvm install --lts
+	
+	#clone repo, npm install, 
+	
+	
+	
+	

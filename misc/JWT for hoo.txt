@@ -1,0 +1,29 @@
+const ed25519 = require('noble-ed25519');
+
+const payload = {"iat": 1599999999,"key": "cnc6666666666666"};
+const secretKey = "CNC88888888888888888888888888888";
+
+const headerPart = objectToBase64URL({"alg": "Ed25519","typ": "JWT"}, removePadding=true);
+const payloadPart = objectToBase64URL(payload, removePadding=true);
+const headerPlusPayloadBuffer = Buffer.from(`${headerPart}.${payloadPart}`);
+const signature = base64ToBase64URL(Buffer.from(await ed25519.sign(headerPlusPayloadBuffer, Buffer.from(secretKey)), 'hex').toString('base64'), removePadding=true);
+    const jwt = `${headerPart}.${payloadPart}.${signature}`;
+    console.log(jwt);
+
+
+
+function base64ToBase64URL(str, removePadding=false){
+    let retS = "";
+    for (let i = 0; i < str.length; ++i){
+        if (str[i] === '+'){
+            retS += '-';
+        } else if (str[i] === '/'){
+            retS += '_';
+        } else if (str[i] === '=' && removePadding){
+
+        } else {
+            retS += str[i];
+        }
+    }
+    return retS;
+}

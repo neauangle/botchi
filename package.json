@@ -1,0 +1,55 @@
+{
+  "name": "botchi",
+  "version": "1.0.0",
+  "description": "Bot suite for Binance and Ethereum-address-compatible chains.",
+  "main": "app/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron --trace-warnings .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [],
+  "author": "Neauangle",
+  "license": "GPLv3",
+  "dependencies": {
+    "@binance/connector": "^1.5.0",
+    "@ethersproject/experimental": "^5.5.0",
+    "big-rational": "^0.10.9",
+    "ethers": "^5.4.7",
+    "lex": "^1.7.9",
+    "lightweight-charts": "^3.6.1",
+    "limiter": "^2.1.0",
+    "node-fetch": "^2.6.6",
+    "nodemailer": "^6.7.0",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "electron": "^14.1.0",
+    "electron-builder": "^22.11.7",
+    "electron-reload": "^2.0.0-alpha.1",
+    "typescript": "^4.4.3"
+  },
+  "build": {
+    "appId": "neauangle.botchi",
+    "productName": "Botchi",
+    "copyright": "Copyright © 2022 ${author}",
+    "win": {
+      "target": "portable",
+      "icon": "icon.ico"
+    },
+    "mac": {
+      "icon": "icon.png"
+    },
+    "extraFiles": [
+      "documentation.pdf"
+    ],
+    "extraResources": [
+      "icon.ico",
+      "icon.png",
+      "./icon.ico",
+      "./icon.png"
+    ]
+  }
+}

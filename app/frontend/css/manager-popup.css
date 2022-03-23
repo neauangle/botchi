@@ -1,0 +1,80 @@
+
+.manager-frame input[type="text"] {
+    padding-left: 7px;
+}
+
+.manager-title-bar {
+    display: flex;
+    justify-content: center;
+    font-size: var(--font-size-h4);
+    flex-wrap: nowrap;
+    white-space: nowrap;
+} 
+
+
+
+.manager-items-row {
+    display: flex;
+    flex-direction: row;
+    column-gap: 15px;
+}
+    .manager-item-select {
+        display: flex;
+        width: 30%;
+    }
+
+    .manager-item-name-input {
+        display: flex;
+        flex-direction: row;
+        width: 30%;
+    }
+
+
+
+
+.manager-fields-section {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: var(--line-colour-a-half) dotted 1px;
+    padding: 15px 10px 15px 10px;
+
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: min-content 1fr min-content;
+    width: 100%;
+    height: 100%;
+    row-gap: 15px;
+    column-gap: 10px;
+}
+
+.eye-icon:hover {
+    cursor: pointer;
+    user-select: none;
+}
+
+.manager-fields-section label {
+    display: flex;
+    justify-content: end;
+    white-space: nowrap;
+    user-select: none;
+    align-items: center;
+}
+
+
+.manager-buttons {
+    display: flex;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    justify-content: space-between;
+    column-gap: 10px;
+    width: 100%;
+}
+.manager-buttons button {
+    padding: 15px 20px;
+    width: 140px;
+}
+
+
+
+
+
