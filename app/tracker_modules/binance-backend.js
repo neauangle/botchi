@@ -223,7 +223,16 @@ async function awaitDepositOrWithdraw(win, args){
     const intervalMS = args.intervalMS ? args.intervalMS : 5000;
     const timeoutMS = Number(args.timeoutSecs) * 1000;
     const msAtStart = new Date().getTime();
+
     win.send({message: `Waiting for ${type} with filter: ${JSON.stringify(filter)} to complete...`}, callbackTicket);
+    let legendString;
+    if (type === 'Deposit'){
+        legendString = `STATUS LEGEND: 0:pending, 6:credited but cannot withdraw, 1:success`;
+    } else {
+        legendString = `STATUS LEGEND: 0:Email Sent, 1:Cancelled, 2:Awaiting Approval, 3:Rejected, 4:Processing, 5:Failure, 6:Completed`;
+    }
+    win.send({message: legendString}, callbackTicket);
+
     let lastStatus;
     let lastTransactionHash; 
     while (new Date().getTime() - msAtStart < timeoutMS){
@@ -342,7 +351,7 @@ awaitUntilComplete, awaitWithdrawTimeoutSecs, callbackTicket}){
     let withdrawInfo;
     console.log('result id', result.id);
     while (!withdrawInfo && awaitWithdrawTimeoutSecs > 0){
-        console.log('tiem left', awaitWithdrawTimeoutSecs);
+        console.log('time left', awaitWithdrawTimeoutSecs);
         const tokenWithdraws = (await client.withdrawHistory({coin: tokenSymbol, limit: 10})).data;
         for (const tokenWithdraw of tokenWithdraws){
             console.log(tokenWithdraw.id);
