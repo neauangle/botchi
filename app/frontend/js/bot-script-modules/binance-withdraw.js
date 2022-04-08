@@ -32,12 +32,6 @@ const CONFIRM_TIMEOUT_SECS_PARAM_INDEX = 5;
 const AUTH_PARAM_INDEX = 6;
 
 
-
-export function getDescription(){
-    return "Todo"
-}
-
-
 export function getTitle(customParameters){
     return `BINANCE WITHDRAW`;
 }

@@ -174,7 +174,6 @@ const workspaceSelectButton = document.getElementById("workspace-select-button")
 const botGroupHamburger = document.getElementById('bot-group-hamburger');
 
 const propertiesTitle = document.getElementById('bot-area-properties-title');
-const propertiesDescription = document.getElementById('bot-area-properties-description');
 const showAdvancedPropertiesToggle = document.getElementById('bot-area-toggle-advance-properties');
 const propertiesContainer = document.getElementById('bot-area-properties');
 
@@ -710,7 +709,6 @@ function clearSelections(clearSelectedBotListing=true){
 
     propertiesContainer.innerHTML = '';
     propertiesTitle.innerHTML = "";
-    propertiesDescription.innerHTML = "";
 }
 
 
@@ -2057,7 +2055,6 @@ function getExistingModuleElement(bot, moduleInfo){
 function showModuleListingDescription(type){
     clearSelections(false)
     propertiesTitle.innerText = Util.spacedAtCapitals(type);
-    propertiesDescription.innerText = ScriptModules.modules[type].getDescription()
 }
 
 
@@ -2980,7 +2977,6 @@ async function showModuleProperties(moduleElement, moduleInfo){
     getExistingModuleElement(currentDisplayedBot, selectedBotModuleInfo).classList.add('showing-properties')
 
     propertiesTitle.innerText = Util.spacedAtCapitals(moduleInfo.type);
-    propertiesDescription.innerText = script.getDescription()
     const parameters = moduleInfo.customParameters;
     
     let botRow = moduleElement.closest('.bot-row');

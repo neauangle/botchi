@@ -23,10 +23,6 @@ export function init(scriptModuleCommon){
 export const NAME = "Start";
 export const VERSION = "0.0.0";
 
-export function getDescription(){
-    return "Represents the start of a task chain. Immediately moves to next module."
-}
-
 export function getTitle(customParameters){
     return "START";
 }

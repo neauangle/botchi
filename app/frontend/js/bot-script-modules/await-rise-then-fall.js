@@ -24,10 +24,6 @@ export const NAME = "AwaitRiseThenFall";
 export const VERSION = "0.0.0";
 export const STATIC_OPTIONS_FALL_PERCENT_OF = AwaitRiseThenFallOrFallThenRiseBase.STATIC_OPTIONS_FALL_PERCENT_OF;
 
-export function getDescription(){
-    return AwaitRiseThenFallOrFallThenRiseBase.getDescription(AwaitRiseThenFallOrFallThenRiseBase.TYPE.AWAIT_RISE_THEN_FALL);
-}
-
 export function getTitle(customParameters){
     return AwaitRiseThenFallOrFallThenRiseBase.getTitle(AwaitRiseThenFallOrFallThenRiseBase.TYPE.AWAIT_RISE_THEN_FALL, customParameters);
 }

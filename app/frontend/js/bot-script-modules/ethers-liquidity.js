@@ -39,10 +39,6 @@ export const STATIC_OPTIONS_TYPE = ['Add', 'Remove'];
 
 export const RESTRICT_TO_TRACKER_TYPES = ['ethers'];
 
-export function getDescription(){
-    return "Add liquidity using the ethers backend."
-}
-
 
 export function getTitle(customParameters){
     return "ETHERS " + customParameters[TYPE_PARAM_INDEX].value.toUpperCase() + " LIQUIDITY";

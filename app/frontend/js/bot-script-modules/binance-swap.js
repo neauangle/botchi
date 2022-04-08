@@ -41,11 +41,6 @@ export const STATIC_OPTIONS_ORDER = ['Market', 'Limit'];
 export const STATIC_OPTIONS_TIME_IN_FORCE = ['GTC (Good Til Cancelled)', 'IOC (Immediate Or Cancel)', 'FOK (Fill Or Kill)'];
 
 
-export function getDescription(){
-    return "Perform a swap using the Binance backend."
-}
-
-
 export function getTitle(customParameters){
     return ScriptModuleCommon.Util.htmlEncode(
         `BINANCE ${customParameters[ORDER_PARAM_INDEX].value.toUpperCase()} ${customParameters[TYPE_PARAM_INDEX].value.split(" ")[0].toUpperCase()}`

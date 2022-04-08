@@ -43,10 +43,6 @@ export const CUSTOM_GAS_PRICE_PARAM_INDEX = 15;
 export const MAX_GAS_PRICE_PARAM_INDEX = 16;
 export const VALUE_FIELD_PARAM_INDEX = 17;
 
-export function getDescription(){
-    return "todo"
-}
-
 
 export function getTitle(customParameters){
     if (customParameters[ABI_SNIPPET_PARAM_INDEX].asJson){

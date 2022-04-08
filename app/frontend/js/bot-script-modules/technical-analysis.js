@@ -49,12 +49,6 @@ export const STATIC_OPTIONS_CONDITION = ['lessThan', 'lessThanOrEqualTo', 'great
 
 export const STATIC_BOLLINGER_TRIGGER = ['Close High', 'Pass High', 'Pass Low', 'Close Low'];
 
-
-export function getDescription(){
-    return "todo"
-}
-
-
 export function getTitle(customParameters){
    return "TA";
 }

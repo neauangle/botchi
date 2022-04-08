@@ -32,12 +32,6 @@ export const ABI_SNIPPET_PARAM_INDEX = 2;
 
 
 
-
-
-export function getDescription(){
-    return "todo"
-}
-
 export function getTitle(customParameters){
     if (customParameters[ABI_SNIPPET_PARAM_INDEX].asJson){
         return "ETHERS EVENT " + customParameters[ABI_SNIPPET_PARAM_INDEX].asJson.name;

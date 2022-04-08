@@ -43,10 +43,6 @@ When an expression is used as the first internal row of a conditional, an evalua
 export const STATEMENTS_PARAM_INDEX = 0;
 
 
-export function getDescription(){
-    return "Evaluates an expression. Refer to documentation for syntax and usage details.";
-}
-
 export function getTitle(customParameters){
     let title = '';
     if (!customParameters[STATEMENTS_PARAM_INDEX].value){

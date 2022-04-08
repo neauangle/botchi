@@ -25,9 +25,6 @@ export const VERSION = "0.0.0";
 
 export const CUSTOM_ERROR_PARAM_INDEX = 0;
 
-export function getDescription(){
-    return "Halts bot with error";
-}
 
 export function getTitle(customParameters){
     return 'THROW ERROR';

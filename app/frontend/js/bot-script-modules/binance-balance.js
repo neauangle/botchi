@@ -28,12 +28,6 @@ export const TOKEN_PARAM_INDEX = 0;
 export const AUTH_PARAM_INDEX = 1;
 
 
-
-export function getDescription(){
-    return "Retrieve an account's balance of a token on Binance."
-}
-
-
 export function getTitle(customParameters){
     return `BINANCE BALANCE`;
 }

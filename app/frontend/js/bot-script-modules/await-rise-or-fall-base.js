@@ -31,18 +31,6 @@ export const TYPE = {
 export const TRIGGER_PARAM_INDEX = 0;
 export const TIME_SCALE_PARAM_INDEX = 1;
 
-
-export function getDescription(type){
-    let description;
-    if (type === TYPE.AWAIT_RISE){
-        description = "Blocks until the price rises above (or equal to) the trigger. ";
-    } else {
-        description = "Blocks until the price falls below (or equal to) the trigger. ";
-    }
-    description +=  "Percentages are relative to the price on entering this module (otherwise it is just the price value)."
-    return description;
-}
-
 export function getTitle(type, customParameters){
     let title = '';
     if (customParameters[TRIGGER_PARAM_INDEX].value){

@@ -27,10 +27,6 @@ export const IS_INTEGER_PARAM_INDEX = 0;
 export const MIN_PARAM_INDEX = 1;
 export const MAX_PARAM_INDEX = 2;
 
-export function getDescription(){
-    return "Generates a random number. Integers are inclusive both ends; floats are inclusive minimum only. NOT crypto secure.";
-}
-
 export function getTitle(customParameters){
     return 'RANDOM ' + (customParameters[IS_INTEGER_PARAM_INDEX].value ? "INT" : "FLOAT");
 ; 

@@ -30,10 +30,6 @@ export const TEXT_PARAM_INDEX = 3;
 export const AUTH_PARAM_INDEX = 4;
 
 
-export function getDescription(){
-    return "Send an email via SMTP.";
-}
-
 export function getTitle(customParameters){
     return "EMAIL";
 }

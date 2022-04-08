@@ -30,11 +30,6 @@ export const DATE_PARAM_INDEX = 2;
 export const STATIC_OPTIONS_TYPE = ['Date', 'Timer'];
  
 
-export function getDescription(){ 
-    return "Awaits for a certain amount of time. The format for durations are HH:MM:SS.MS filled from right to left (e.g. 13:01 is 13 mins and 1 sec " 
-    + "and 0.500 is 500 milliseconds. The format for times are 24-hour with optional colon (e.g. 01:30) in local time, or ISO8601 with seconds optional (e.g. 2021-10-13T12:13)";
-}
-
 export function getTitle(customParameters){
     if (customParameters[TYPE_PARAM_INDEX].value === 'Timer'){
         if (customParameters[TIMER_PARAM_INDEX].valid){

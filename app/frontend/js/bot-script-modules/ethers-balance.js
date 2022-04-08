@@ -29,14 +29,6 @@ export const TOKEN_ADDRESS_PARAM_INDEX = 1;
 export const WALLET_ADDRESS_PARAM_INDEX = 2;
 
 
-
-
-
-export function getDescription(){
-    return "todo"
-}
-
-
 export function getTitle(customParameters){
     return "ETHERS BALANCE";
 }

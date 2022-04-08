@@ -25,9 +25,6 @@ export const VERSION = "0.0.0";
 
 export const TRACKER_NEUTRAL = true; 
 
-export function getDescription(){
-    return "Represents the end of a task chain. Bot is finished."
-}
 
 export function getTitle(customParameters){
     return "END";

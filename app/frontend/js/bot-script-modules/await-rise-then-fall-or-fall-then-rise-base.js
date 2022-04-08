@@ -32,25 +32,6 @@ export const TYPE = {
 export const STATIC_OPTIONS_FALL_PERCENT_OF = ['Delta (change)', 'Price'];
 
 
-
-
-export function getDescription(type){
-    let description;
-    if (type === TYPE.AWAIT_FALL_THEN_RISE){
-        description = "Blocks until the price rises a certain amount after falling. The minimum fall "
-        + "can be a raw price destination or a % of the price on entering this module, while the rise trigger is either a % of the lowest price reached or of the "
-        + "fall delta."
-    } else {
-        description = "Blocks until the price falls a certain amount after rising. The minimum rise "
-        + "can be a raw price destination or a % of the price on entering this module, while the fall trigger is either a % of the highest price reached or of the "
-        + "rise delta."
-    }
-
-    return description;
-}
-
-
-
 export function getTitle(type, customParameters){
     if (!customParameters[MINIMUM_PARAM_INDEX].value || !customParameters[THEN_TRIGGER_PARAM_INDEX].value){
         return 'AWAIT ---';

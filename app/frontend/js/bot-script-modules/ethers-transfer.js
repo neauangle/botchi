@@ -34,10 +34,6 @@ export const NUM_ATTEMPTS_PARAM_INDEX = 6;
 export const AUTH_PARAM_INDEX = 7;
 
 
-export function getDescription(){
-    return "todo"
-}
-
 
 export function getTitle(customParameters){
     return "ETHERS TRANSFER";

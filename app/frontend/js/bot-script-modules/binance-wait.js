@@ -32,11 +32,6 @@ export const AUTH_PARAM_INDEX = 3;
 export const STATIC_OPTIONS_TYPE = ['Deposit', 'Withdraw'];
 
 
-export function getDescription(){
-    return "Todo"
-}
-
-
 export function getTitle(customParameters){
     return `BINANCE WAIT`;
 }

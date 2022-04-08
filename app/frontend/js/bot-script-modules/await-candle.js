@@ -28,10 +28,6 @@ export const STATIC_OPTIONS_TIME_SCALE = ['1m', '15m', '1h', '4h', '1d'];
 
 export const TIME_SCALE_PARAM_INDEX = 0;
 
-export function getDescription(){
-    return "Awaits until a new candle.";
-}
-
 export function getTitle(customParameters){
     return 'AWAIT NEXT ' + customParameters[TIME_SCALE_PARAM_INDEX].value;
 }

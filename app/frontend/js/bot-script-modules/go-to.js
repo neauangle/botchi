@@ -25,9 +25,6 @@ export const VERSION = "0.0.0";
 
 export const OUTER_ROW_INDEX_PARAM_INDEX = 0;
 
-export function getDescription(){
-    return "Jumps to another row instead of the next one in line.";
-}
 
 export function getTitle(customParameters){
     return 'GOTO ' + customParameters[OUTER_ROW_INDEX_PARAM_INDEX].value;

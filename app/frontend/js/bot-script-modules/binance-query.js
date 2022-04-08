@@ -28,12 +28,6 @@ export const QUERY_PARAM_INDEX = 0;
 export const AUTH_PARAM_INDEX = 1;
 
 
-
-export function getDescription(){
-    return "Perform a general query to the Binance API."
-}
-
-
 export function getTitle(customParameters){
     return `BINANCE QUERY`;
 }

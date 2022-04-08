@@ -30,10 +30,6 @@ export const STATEMENTS_PARAM_INDEX = 3;
 export const IS_BLOCKING_PARAM_INDEX = 4; //bots.js uses this to stop bot on deactivation if blocking
 
 
-export function getDescription(){
-    return "Starts Bot";
-}
-
 export function getTitle(customParameters){
     if (customParameters[BOT_GROUP_PARAM_INDEX].value && customParameters[BOT_NAME_PARAM_INDEX].value){
         return `Spawn <${customParameters[BOT_GROUP_PARAM_INDEX].value}.${customParameters[BOT_NAME_PARAM_INDEX].value}>`;

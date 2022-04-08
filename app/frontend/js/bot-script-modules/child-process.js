@@ -27,9 +27,6 @@ export const COMMAND_PARAM_INDEX = 0;
 export const HIDE_WINDOW_PARAM_INDEX = 1;
 export const IS_BLOCKING_PARAM_INDEX = 2;
 
-export function getDescription(){
-    return "Runs a command in a child process."
-}
 
 export function getTitle(customParameters){
     let firstPhrase;

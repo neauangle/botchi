@@ -20,9 +20,6 @@ import * as Templates from './templates.js';
 import * as Prompt from './prompt.js';
 import * as Waiting from './waiting.js';
 
-import * as Util from './util.js';
-import {getOption} from './templates.js';
-
 const backends = {};
 
 export const EVENTS = {

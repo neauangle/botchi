@@ -29,10 +29,6 @@ export const TEXT_PARAM_INDEX = 2;
 export const IS_BLOCKING_PARAM_INDEX = 3;
 
 
-export function getDescription(){
-    return "todo"
-}
-
 export function getTitle(customParameters){
     return "WRITE FILE";
 }

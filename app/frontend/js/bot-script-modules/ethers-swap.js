@@ -49,11 +49,6 @@ export const AUTH_PARAM_INDEX = 8;
 export const STATIC_OPTIONS_TYPE = ['Buy', 'Sell'];
 
 
-export function getDescription(){
-    return "Perform a transaction using the ethers backend."
-}
-
-
 export function getTitle(customParameters){
     return "ETHERS " + customParameters[TYPE_PARAM_INDEX].value.toUpperCase();
 }

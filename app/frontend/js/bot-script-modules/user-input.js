@@ -28,9 +28,7 @@ export const INPUT_VARIABLES_PARAM_INDEX = 1;
 export const OKAY_BUTTON_TEXT_PARAM_INDEX = 2;
 export const CANCEL_BUTTON_TEXT_PARAM_INDEX = 3;
 
-export function getDescription(){
-    return "todo";
-}
+
 
 export function getTitle(customParameters){
     return "USER INPUT";

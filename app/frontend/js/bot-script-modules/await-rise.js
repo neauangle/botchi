@@ -25,9 +25,6 @@ export const VERSION = "0.0.0";
 
 export const STATIC_OPTIONS_TIME_SCALE = AwaitRiseOrFallBase.STATIC_OPTIONS_TIME_SCALE;
 
-export function getDescription(){
-    return AwaitRiseOrFallBase.getDescription(AwaitRiseOrFallBase.TYPE.AWAIT_RISE);
-}
 
 export function getTitle(customParameters){
     return AwaitRiseOrFallBase.getTitle(AwaitRiseOrFallBase.TYPE.AWAIT_RISE, customParameters);
