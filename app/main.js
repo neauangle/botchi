@@ -211,7 +211,6 @@ async function createMainWindow() {
     */
     const callbackTicketToDataCapsules = {};
     mainWindow.send = (data, callbackTicket) => {
-        console.log(data, callbackTicket, callbackTicketToDataCapsules);
         if (!callbackTicketToDataCapsules[callbackTicket]) {
             throw 'unregistered callbackTicket ' + callbackTicket;
         }
@@ -625,7 +624,6 @@ async function sendEmail(auth, to, subject, text) {
     return "Success!";
 }
 function writeToFile(filePath, text, isAppend) {
-    console.log(filePath);
     if (!fs.existsSync(filePath)) {
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
     }
