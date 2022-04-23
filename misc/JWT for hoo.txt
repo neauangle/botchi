@@ -1,14 +1,45 @@
+const bigRational = require("big-rational");
+const { RateLimiter } = require("limiter");
+const EventEmitter = require('events');
+const fetch = require('node-fetch');
 const ed25519 = require('noble-ed25519');
 
-const payload = {"iat": 1599999999,"key": "cnc6666666666666"};
-const secretKey = "CNC88888888888888888888888888888";
+const API_KEY = "cnc6666666666666";
+const SECRET_KEY = "CNC88888888888888888888888888888";
 
-const headerPart = objectToBase64URL({"alg": "Ed25519","typ": "JWT"}, removePadding=true);
-const payloadPart = objectToBase64URL(payload, removePadding=true);
-const headerPlusPayloadBuffer = Buffer.from(`${headerPart}.${payloadPart}`);
-const signature = base64ToBase64URL(Buffer.from(await ed25519.sign(headerPlusPayloadBuffer, Buffer.from(secretKey)), 'hex').toString('base64'), removePadding=true);
+/*
+    How JWTs work
+    -------------
+    There are three parts: <header>.<payload>.<signature>
+    We generate the header and payload part, concatenate them,
+    then generate the signature and concatenate that. 
+    Note that (at least hoo.com) uses base64url, which is slightly different 
+    in that + becomes - and / becomes _. They also don't seem to
+    include the paddign character =, so we trim that too.
+
+    We can currently match the example on https://github.com/chaince/apidocs/blob/master/authentication.md
+    so this would work- the onyl problem is hoo only allows us to swap certain things and none in innovation.
+*/
+
+
+
+(async () => {
+   
+    const timestamp = Date.now();
+    const payload = {"iat": timestamp,"key": API_KEY};
+
+    
+    const headerPart = objectToBase64URL({"alg": "Ed25519","typ": "JWT"}, removePadding=true);
+    const payloadPart = objectToBase64URL(payload, removePadding=true);
+    const headerPlusPayloadBuffer = Buffer.from(`${headerPart}.${payloadPart}`);
+    const signature = base64ToBase64URL(Buffer.from(await ed25519.sign(headerPlusPayloadBuffer, Buffer.from(SECRET_KEY)), 'hex').toString('base64'), removePadding=true);
     const jwt = `${headerPart}.${payloadPart}.${signature}`;
     console.log(jwt);
+
+})();
+
+
+
 
 
 
@@ -26,4 +57,12 @@ function base64ToBase64URL(str, removePadding=false){
         }
     }
     return retS;
+}
+
+function bufferToBase64URL(buffer, removePadding=false){
+    return base64ToBase64URL(buffer.toString('base64'), removePadding);
+}
+
+function objectToBase64URL(obj, removePadding=false){
+    return base64ToBase64URL(Buffer.from(JSON.stringify(obj)).toString('base64'), removePadding);
 }

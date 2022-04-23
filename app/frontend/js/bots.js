@@ -1758,6 +1758,14 @@ async function startBot(bot, startingAtOuterRow = 0, initialVariables={}){
     
             doneModuleInfo.module.emitOutputLines();
 
+            const finalOutputArray = doneModuleInfo.module.getOutputArray();
+            doneModuleInfo.traceModuleElement.removeEventListener('contextmenu', doneModuleInfo.contextMenuListener);
+            doneModuleInfo.contextMenuListener = event => {
+                const traceOutputString = getTraceOutputString('Result: ', finalOutputArray)
+                Prompt.showBigTextArea({title: "Trace Output", text: traceOutputString, readonly: true, noCancel: true});
+            };
+            doneModuleInfo.traceModuleElement.addEventListener('contextmenu', doneModuleInfo.contextMenuListener);
+
             infiniteLoopCheckerDoneModulesCount += 1;
             if (infiniteLoopCheckerDoneModulesCount > 25){
                 const msNow = Date.now();
@@ -1915,12 +1923,13 @@ async function startBot(bot, startingAtOuterRow = 0, initialVariables={}){
                         } 
                     }
                 });
-                traceModuleElement.addEventListener('contextmenu', event => {
+                
+                moduleInfo.traceModuleElement = traceModuleElement;
+                moduleInfo.contextMenuListener = event => {
                     const traceOutputString = getTraceOutputString('Result: ', moduleInfo.module.getOutputArray())
                     Prompt.showBigTextArea({title: "Trace Output", text: traceOutputString, readonly: true, noCancel: true});
-                });
-
-                moduleInfo.traceModuleElement = traceModuleElement;
+                };
+                traceModuleElement.addEventListener('contextmenu', moduleInfo.contextMenuListener)
                 moduleInfo.outputLinesContainerElement = traceModuleElement.getElementsByClassName(`module-output-lines`)[0];
 
                 botInstance.activeModuleInfos.push(moduleInfo);

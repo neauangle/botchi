@@ -1,6 +1,6 @@
 {
   "name": "botchi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bot suite for Binance and Ethereum-address-compatible chains.",
   "main": "app/main.js",
   "scripts": {

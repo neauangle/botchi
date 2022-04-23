@@ -3,6 +3,7 @@ import sys
 import re
 
 #you'll have to add logic to remove the current copyright statement if you update it later (ie 2023). I can't be arsed.
+#also, manually remove the license from frontend/js/third_party
 
 COPYLEFT_MESSAGE = """/*
 Copyright (C) 2022 https://github.com/neauangle (neauangle@protonmail.com)
