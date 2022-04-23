@@ -23,7 +23,7 @@ import * as Globals from '../globals.js'; export {Globals};
 import * as BigRational from '../third_party/big.mjs'; const Big = BigRational.Big; export {Big};
 import * as Prompt from '../prompt.js';
 import * as Emitter from  '../event-emitter.js';
-
+import * as Addtracker from  '../add-tracker.js';
 
 export function getNeutralLinecolour(){
     return getComputedStyle(document.documentElement).getPropertyValue('--neutral-priceline-colour').trim();
@@ -50,6 +50,9 @@ export const EVENTS = {
 export const ASSIGNMENT_TOKEN_REGEX = /(?:^|\n)\$(V|G)\.([a-zA-Z][_a-zA-Z0-9]*)\s*(=|:=)\s*/i; 
 export const VARIABLE_NAME_REGEX = /[a-zA-Z][_a-zA-Z0-9]*/i; 
 
+export function addTracker(backendIndex, args){
+    return Addtracker.addTracker(backendIndex, args, false);
+}
 
 export function validateExpression({expression, allowEmpty, allowPercentage}){
     expression = expression.trim();
@@ -776,25 +779,32 @@ export function getModuleInstance(){
 
 export async function handleParameterMetaEthersNetwork(parameter, tracker){
     const backendIndex = getBackendIndex('ethers');
-    const endpointNameToNodeIds = await window.bridge.callBackendFunction(backendIndex, 'getEndpointNameToNodeIds');
-    const endpointNames = [...Object.keys(endpointNameToNodeIds)];
-    parameter.options = endpointNames;
-    parameter.optionsHaveChanged = true;
-    if (endpointNames.includes(parameter.value)){
+    let nameToIds;
+    if (parameter.name === 'api'){
+        nameToIds = await window.bridge.callBackendFunction(backendIndex, 'getEndpointNameToNodeIds');
+        parameter.options = [...Object.keys(nameToIds)];
+        parameter.optionsHaveChanged = true;
+    } else if (parameter.name === 'exchange'){
+        nameToIds = await window.bridge.callBackendFunction(backendIndex, 'getExchangeNameToNodeIds');
+        parameter.options = [...Object.keys(nameToIds)];
+        parameter.optionsHaveChanged = true;
+    }
+    
+    if (parameter.options.includes(parameter.value)){
         parameter.valid = true;
     } else {
         if (tracker && tracker.backendIndex === backendIndex){
-            for (const endpointName of endpointNames){
-                if (endpointNameToNodeIds[endpointName].includes(tracker.id)){
-                    parameter.value = endpointName;
+            for (const option of parameter.options){
+                if (nameToIds[option].includes(tracker.id)){
+                    parameter.value = option;
                     parameter.valid = true;
                     break;
                 }
             }
 
         }
-        if (parameter.value === null && endpointNames.length > 1){
-            parameter.value = endpointNames[0];
+        if (parameter.value === null && parameter.options.length > 1){
+            parameter.value = parameter.options[0];
             parameter.valid = true;
         } 
         if (parameter.value === null){

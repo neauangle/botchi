@@ -32,6 +32,7 @@ const BUILTIN_MODULE_FILEPATHS = [
     './email.js',
     './write-file.js',
     './statements.js',
+    './ethers-add-tracker.js',
     './ethers-balance.js',
     './ethers-swap.js',
     './ethers-transfer.js',

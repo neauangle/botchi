@@ -101,27 +101,55 @@ frame.addEventListener("mousedown", ev => {
 
 addTrackerButton.addEventListener('click', async () => {
     //general callback in app.js will handle updating waiting message
-    Waiting.startWaiting();
     const backend = backends[trackerTypeInput.value];
     const args = backend.addTrackerSubmodule.addTrackerForm.getArgs();
+    addTracker(backend.index, args, true);
+});
+
+export async function addTracker(backendIndex, args, useUI){
+    let backend;
+    for (const backendInfo of Object.values(backends)){
+        if (backendInfo.index === backendIndex){
+            backend = backendInfo;
+            break;
+        }
+    }
     let tracker;
+    if (useUI){
+        Waiting.startWaiting();
+    }
     try {
-        tracker = await window.bridge.callBackendFunction(backend.index, 'addTracker', args);
-        Waiting.stopWaiting();
+        args.useUI = useUI;
+        tracker = await window.bridge.callBackendFunction(backendIndex, 'addTracker', args);
+        if (useUI){
+            Waiting.stopWaiting();
+        }
     } catch (error){
         console.log(`Error adding tracker: ${error}`);
-        Waiting.stopWaiting();
-        await Prompt.showMessage({title: `Error`, message: `Error adding tracker: ${error}`});
+        if (useUI){
+            Waiting.stopWaiting();
+            await Prompt.showMessage({title: `Error`, message: `Error adding tracker: ${error}`});
+        } else {
+            throw error;
+        }
+        return null;
     }
     if (tracker){
         if (!backend.info.trackers[tracker.id]){
             emitter.emitEvent(EVENTS.TRACKER_ADDED, {backendIndex: backend.index, tracker});
-            await Prompt.showMessage({title: `Pair Added!`, message: `${tracker.name}`});
+            if (useUI){
+                await Prompt.showMessage({title: `Pair Added!`, message: `${tracker.name}`});
+            }
         } else {
-            await Prompt.showMessage({title: `Pair Already Exists!`, message: `${tracker.name}`});
+            if (useUI){
+                await Prompt.showMessage({title: `Pair Already Exists!`, message: `${tracker.name}`});
+            }
         }
-        hide();
+        if (useUI){
+            hide();
+        }
+        return tracker;
+    } else {
+        return null;
     }
-    
-    
-});
+}

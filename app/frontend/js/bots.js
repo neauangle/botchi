@@ -3270,7 +3270,9 @@ function checkModuleParameters(parameters){
     for (let i = 0; i < parameters.length; ++i){
         const parameter = parameters[i];
         const input = propertiesContainer.getElementsByClassName(`${parameter.name} input`)[0];
-        
+        if (!input){
+            console.trace();
+        }
         if (parameter.type === 'boolean'){
             input.checked = parameter.value;
         } else if (parameter.type === 'select'){

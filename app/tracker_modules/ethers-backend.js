@@ -154,6 +154,17 @@ function call(functionName, args){
         const exchangeNode = database.exchanges[node.exchangeId];
         const endpointNode = database.endpoints[exchangeNode.endpointId];
         return endpointNode.name;
+    } else if (functionName === 'getExchangeId'){
+        const endpointName = args.endpointName;
+        const endpointNode = Object.values(database.endpoints).filter(possibleEndpointNode => possibleEndpointNode.name === endpointName)[0];
+        console.log('endpointNode', endpointNode);
+        if (endpointNode){
+            for (const exchange of Object.values(database.exchanges)){
+                if (exchange.endpointId === endpointNode.id && exchange.name === args.exchangeName){
+                    return exchange.id;
+                }
+            }
+        }
     }  else if (functionName == 'getLiquidityTotalSupplyMarketCap'){
        return getLiquidityTotalSupplyMarketCap(args.id);
     }
@@ -167,6 +178,13 @@ function call(functionName, args){
             ret[endpoint.name] = idToJS[endpoint.id].pairIds;
         }
         return ret;
+    } else if (functionName === 'getExchangeNameToNodeIds'){
+        const ret = {};
+        for (const exchange of Object.values(database.exchanges)){
+            ret[exchange.name] = idToJS[exchange.endpointId].pairIds.filter(pairId => database.pairNodes[pairId].exchangeId === exchange.id);
+        }
+        return ret;
+        
     } else if (functionName === 'getPairBalances'){
         return getPairBalances(args);
     } else if (functionName === 'addOrRemoveliquidity'){
@@ -694,7 +712,7 @@ function getPairNode(nodeId){
 
 //the factoryAddress/routerAddress should be for the exchange that holds the address-comparatorAddress pair
 async function addPairNode({exchangeId, tokenAddress, comparatorAddress, 
-comparatorIsFiat, updateMethod, pollIntervalSeconds, pollQuoteTokenAmount, isActive}){
+comparatorIsFiat, updateMethod, pollIntervalSeconds, pollQuoteTokenAmount, isActive}, emitUpdates=true){
     const exchangeNode = getExchangeNode(exchangeId);
     const endpointNode = getEndpointNode(exchangeNode.endpointId);
 
@@ -723,7 +741,10 @@ comparatorIsFiat, updateMethod, pollIntervalSeconds, pollQuoteTokenAmount, isAct
         comparatorDecimals = endpointNode.ethTokenDecimals;
     }
 
-    emitter.emit('addTrackerProgress', {message: 'Fetching token info...'});
+    if (emitUpdates){
+        emitter.emit('addTrackerProgress', {message: 'Fetching token info...'});
+    }
+    
 
     console.log("Adding new pair");
     console.log({exchangeId, tokenAddress, comparatorAddress, comparatorIsFiat});

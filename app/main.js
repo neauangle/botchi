@@ -29,7 +29,7 @@ const util = require("./util");
 const net = require('net');
 const nodemailer = require("nodemailer");
 const trackerModuleSpec = require('./tracker-module-spec');
-const IS_DEBUG = false;
+const IS_DEBUG = true;
 //https://drive.google.com/drive/folders/1QCj_6_cuFMSFrsRthG8b3tOX-8nI38Z5?usp=sharing
 //zip -er mac.zip Mac
 //npx tsc --project ./ | npm run-script pack
