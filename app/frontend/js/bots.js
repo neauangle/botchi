@@ -240,7 +240,10 @@ const [toggleShowAdvancedPropertiesOff, toggleShowAdvancedPropertiesOn] = (() =>
         onToggle.style.display = 'flex';
         offToggle.style.display = 'none';
         for (const element of propertiesContainer.getElementsByClassName('advanced')){
-            element.style.display = 'flex';
+            if (!element.classList.contains('forceInvisible')){
+                element.style.display = 'flex';
+            }
+            
         }
     }
     const toggleOff = () => {
@@ -623,7 +626,7 @@ async function addBotGroup(botGroup){
                     botOfGroup.defaultTrackerURI = {backendIndex: null, trackerId: null};
                     performFunctionOnAllModuleInfos(botOfGroup, (moduleInfo => {
                         if (moduleInfo){
-                            if (moduleInfo.trackerURI !== 'DEFAULT'){
+                            if (moduleInfo.trackerURI !== 'CUSTOM' && moduleInfo.trackerURI !== 'DEFAULT'){
                                 moduleInfo.trackerURI = {backendIndex: null, trackerId: null};
                             }
                             for (const customParameter of moduleInfo.customParameters){
@@ -878,7 +881,7 @@ async function addBot(botGroupListing, botGroup, botName=null, bot=null){
                                 continue;
                             } 
                         }
-                        if (moduleInfo.trackerURI !== 'DEFAULT'){
+                        if (moduleInfo.trackerURI !== 'CUSTOM' && moduleInfo.trackerURI !== 'DEFAULT'){
                             const trackers = TrackersManager.getTrackers(script.RESTRICT_TO_TRACKER_TYPES);
                             let matched = false;
                             for (const tracker of trackers) {
@@ -1511,23 +1514,29 @@ async function startBot(bot, startingAtOuterRow = 0, initialVariables={}){
                 const column = k + 1;
                 moduleInfo.moduleElement = logicRowsHTML.children[i].getElementsByClassName(`bot-module-outline row-${row} column-${column}`)[0].firstChild;
                 let trackerURI = moduleInfo.trackerURI;
-                if (!moduleInfo.trackerURI || moduleInfo.trackerURI === 'DEFAULT'){
-                    trackerURI = botInstance.defaultTrackerURI;
-                } 
-                const tracker = TrackersManager.getTracker(trackerURI.backendIndex, trackerURI.trackerId);
-                const uriString = `${trackerURI.backendIndex}-${trackerURI.trackerId}`;
-                if (!tracker){ 
-                    halt({haltMessage: `Could not retrieve tracker ${uriString}`, isError: true});
-                    return botRunPromise; //its okay- you can await completed promises
+                let tracker = null;
+                if (moduleInfo.trackerURI === 'CUSTOM'){
+                    trackerURI = 'CUSTOM';
+                } else {
+
+                    if (!moduleInfo.trackerURI || moduleInfo.trackerURI === 'DEFAULT'){
+                        trackerURI = botInstance.defaultTrackerURI;
+                    } 
+                    tracker = TrackersManager.getTracker(trackerURI.backendIndex, trackerURI.trackerId);
+                    const uriString = `${trackerURI.backendIndex}-${trackerURI.trackerId}`;
+                    if (!tracker){ 
+                        halt({haltMessage: `Could not retrieve tracker ${uriString}`, isError: true});
+                        return botRunPromise; //its okay- you can await completed promises
+                    }
+                    moduleInfo.tracker = tracker;
+                    moduleInfo.trackerURIString = uriString;
                 }
-                moduleInfo.tracker = tracker;
-                moduleInfo.trackerURIString = uriString;
                 moduleInfo.module =  ScriptModules.modules[moduleInfo.type].getInstance(moduleInfo.customParameters);
                 moduleInfo.module.id = moduleInfo.id;
                 moduleIdToModuleInfo[moduleInfo.id] = moduleInfo
                 try {
                     moduleInfo.module.init(
-                        moduleInfo.module.id, tracker, botInstance.localVariables, rowLabels, 
+                        moduleInfo.module.id, botInstance.localVariables, rowLabels, 
                         moduleInfo.outerRowIndex, rowResults
                     );
                 } catch (error) {
@@ -1536,7 +1545,7 @@ async function startBot(bot, startingAtOuterRow = 0, initialVariables={}){
                 }
                 moduleInfo.module.emitter.addEventListener(ScriptModuleCommon.EVENTS.OUTPUT_LINES_UPDATED, outputUpdated);
                 const restrictedTotypes = moduleInfo.module.RESTRICT_TO_TRACKER_TYPES;
-                if (restrictedTotypes && !restrictedTotypes.some(trackerType => tracker.backendIndex === ScriptModuleCommon.getBackendIndex(trackerType))){
+                if (tracker && restrictedTotypes && !restrictedTotypes.some(trackerType => tracker.backendIndex === ScriptModuleCommon.getBackendIndex(trackerType))){
                     halt({haltMessage: `Row ${i}: Invalid tracker type "${ ScriptModuleCommon.getBackendName(tracker.backendIndex)}" (requires one of ${restrictedTotypes}`, isError: true});
                     return botRunPromise;
                 }
@@ -1963,11 +1972,38 @@ async function startBot(bot, startingAtOuterRow = 0, initialVariables={}){
                     }
                 }
 
+                let trackerDerivationLines = [];
+                if (moduleInfo.trackerURI === 'CUSTOM'){
+                    trackerDerivationLines.push(moduleInfo.customTrackerId);
+                    const backendName = moduleInfo.customTrackerBackendName;
+                    const trackerIdResult = moduleInfo.module.getEvaluation({expression: moduleInfo.customTrackerId});
+                    
+                    if (trackerIdResult.error){
+                        halt({haltMessage: `Error evaluating custom tracker: ${trackerIdResult.error}`, isError: true});
+                        return botRunPromise; //its okay- you can await completed promises 
+                    }
+
+                    const trackerId = trackerIdResult.stringValue;
+                    const backendIndex = TrackersManager.getBackendIndex(backendName);
+                    const tracker = TrackersManager.getTracker(backendIndex, trackerId);
+                    if (!tracker){ 
+                        const uriString = `${backendIndex}-${trackerId}`;
+                        halt({haltMessage: `Could not retrieve tracker ${uriString}`, isError: true});
+                        return botRunPromise; //its okay- you can await completed promises
+                    }
+                    moduleInfo.tracker = tracker
+                    for (const derivationLine of trackerIdResult.derivationLines){
+                        trackerDerivationLines.push(derivationLine);
+                    }
+                }
+
                 moduleInfo.entryPrice = moduleInfo.tracker.mostRecentPrice && moduleInfo.tracker.mostRecentPrice.comparator ? Number(moduleInfo.tracker.mostRecentPrice.comparator) : 0;
                 moduleInfo.entryPriceFiat = moduleInfo.tracker.mostRecentPrice && moduleInfo.tracker.mostRecentPrice.fiat ? Number(moduleInfo.tracker.mostRecentPrice.fiat) : 0;	
                 rowResults[moduleInfo.outerRowIndex].entryPrice = moduleInfo.entryPrice;
                 rowResults[moduleInfo.outerRowIndex].entryPriceFiat = moduleInfo.entryPriceFiat;
                 return moduleInfo.module.activate(
+                    trackerDerivationLines,
+                    moduleInfo.tracker,
                     moduleInfo.statementsBefore.value, //moduleInfo.statementsAfter.value is handled by us
                     auxillaryFunctions,
                     previousOuterRowIndex
@@ -2106,6 +2142,8 @@ function getBasicBot(name){
             innerRowIndex,
             innerColumnIndex,
             trackerURI,
+            customTrackerBackendName: '', 
+            customTrackerId: '',
             gotoRowOnError: 'DEFAULT',
             isInRaceBlock: false,
             expandedAcrossRaceBlockRow: false,
@@ -2531,7 +2569,9 @@ TrackersManager.emitter.addEventListener(TrackersManager.EVENTS.TRACKER_ADDED, e
 
 
 function updateModuleElementTrackerURI(bot, moduleElement, moduleInfo){
-    if (moduleInfo.trackerURI === 'DEFAULT'){
+    if (moduleInfo.trackerURI === 'CUSTOM'){
+        moduleElement.getElementsByClassName('tracker-uri')[0].innerText = "CUSTOM";
+    } else if (moduleInfo.trackerURI === 'DEFAULT'){
         moduleElement.getElementsByClassName('tracker-uri')[0].innerText = "DEFAULT";
     } else {
         const tracker = TrackersManager.getTracker(moduleInfo.trackerURI.backendIndex, moduleInfo.trackerURI.trackerId);
@@ -2747,6 +2787,7 @@ function getModuleTemplate(htmlBotRow, type){
                 }
                 moduleInfo = {
                     type, trackerURI: 'DEFAULT', gotoRowOnError: 'DEFAULT', customParameters: script.getDefaultParameters(),
+                    customTrackerBackendName: '', customTrackerId: '',
                     statementsBefore: {value: '', valid: true}, statementsAfter: {value: '', valid: true}, version: script.VERSION
                 };
             } else {           
@@ -2859,7 +2900,9 @@ function initModuleHTML(bot, moduleElement, moduleInfo){
     
     moduleElement.addEventListener('click', e => {
         let trackerURI = moduleInfo.trackerURI;
-        if (!moduleInfo.trackerURI || moduleInfo.trackerURI === 'DEFAULT'){
+        if (moduleInfo.trackerURI === 'CUSTOM'){
+            
+        } else if (!moduleInfo.trackerURI || moduleInfo.trackerURI === 'DEFAULT'){
             trackerURI = bot.defaultTrackerURI;
         } 
         if (trackerURI){
@@ -2992,13 +3035,15 @@ async function showModuleProperties(moduleElement, moduleInfo){
     const outerRowIndex = Array.prototype.indexOf.call(botRow.closest('.bot-logic').children, botRow);
     const numOuterRows = botRow.closest('.bot-logic').children.length;
     
-    const trackerURIStringToSignature = {DEFAULT: 'DEFAULT'};
+    const trackerURIStringToSignature = {CUSTOM: 'CUSTOM', DEFAULT: 'DEFAULT'};
     const trackerURIStringToSignatures = TrackersManager.getTrackerURIStringToTrackerURISignature(script.RESTRICT_TO_TRACKER_TYPES);
     for (const key of Object.keys(trackerURIStringToSignatures)){
         trackerURIStringToSignature[key] = trackerURIStringToSignatures[key];
     }
     let trackerInputInitialValue;
-    if (moduleInfo.trackerURI === 'DEFAULT'){
+    if (moduleInfo.trackerURI === 'CUSTOM'){
+        trackerInputInitialValue = 'CUSTOM'
+    } else if (moduleInfo.trackerURI === 'DEFAULT'){
         trackerInputInitialValue = 'DEFAULT'
     } else {
         trackerInputInitialValue = `${moduleInfo.trackerURI.backendIndex}-${moduleInfo.trackerURI.trackerId}`;
@@ -3007,8 +3052,20 @@ async function showModuleProperties(moduleElement, moduleInfo){
     const gotoOptions = getRowLabels(currentDisplayedBot);
     Util.removeArrayItemOnce(gotoOptions, 'DEFAULT');
 
+    let backendNames;
+    if (script.RESTRICT_TO_TRACKER_TYPES){
+        backendNames = script.RESTRICT_TO_TRACKER_TYPES;
+    } else {
+        backendNames = TrackersManager.getBackendNames();
+    }
+    if (!backendNames.includes(moduleInfo.customTrackerBackendName)){
+        moduleInfo.customTrackerBackendName = backendNames[0];
+    }
+
     const advancedParameters = [
         {name: 'Tracker', value: trackerInputInitialValue, type: 'select', advanced: true, options: trackerURIStringToSignature},
+        {name: 'customTrackerBackend', label: 'Backend', value: moduleInfo.customEndpointName, type: 'select', advanced: true, options: backendNames},
+        {name: 'customTrackerID', label: 'Tracker ID', value: moduleInfo.customTrackerId, type: 'text', advanced: true},
         {name: 'Error Goto', value: 'DEFAULT', type: 'select', advanced: true, options: errorGotoOptions},
         {name: 'statementsBefore', value: moduleInfo.statementsBefore.value, type: 'textArea',  advanced: true, placeholder: ''},
         {name: 'statementsAfter',  value: moduleInfo.statementsAfter.value, type: 'textArea',  advanced: true, placeholder: ''}
@@ -3029,6 +3086,39 @@ async function showModuleProperties(moduleElement, moduleInfo){
         script, ScriptModuleCommon.database, advancedParameters.concat(parameters), staticOptions
     ));
     setAllowEditingSelectedBotParameters(currentDisplayedBot.botGroupId !== -1 && !botIdToBotInstanceMap.get(currentDisplayedBot.id));
+    
+    const customTrackerBackendInput = propertiesContainer.getElementsByClassName('input customTrackerBackend')[0];
+    const customTrackerIDInput = propertiesContainer.getElementsByClassName('input customTrackerID')[0];
+    const setCustomTrackerIDVisibility = (visible) => {
+        const elements = [...propertiesContainer.getElementsByClassName('customTrackerID')];
+        elements.push(...propertiesContainer.getElementsByClassName('customTrackerBackend'))
+        for (const element of elements){
+            if (!visible){
+                element.classList.add('forceInvisible');
+                element.style.display = 'none';
+            } else {
+                element.classList.remove('forceInvisible');
+                if (propertiesContainer.getElementsByClassName('Tracker input')[0].style.display !== 'none'){
+                    element.style.display = 'flex';
+                }
+            }
+            
+        }
+    }
+    if (trackerInputInitialValue !== 'CUSTOM'){
+        setCustomTrackerIDVisibility(false);
+    }
+    customTrackerBackendInput.addEventListener('change', () => moduleInfo.customTrackerBackendName = customTrackerBackendInput.value);
+    customTrackerIDInput.addEventListener('change', () => {
+        customTrackerIDInput.value = customTrackerIDInput.value.trim();
+        moduleInfo.customTrackerId = customTrackerIDInput.value;
+        if (ScriptModuleCommon.validateExpression({expression: customTrackerIDInput.value, allowEmpty: false})){
+            customTrackerIDInput.classList.remove('input-invalid');
+        } else {
+            customTrackerIDInput.classList.add('input-invalid');
+            updateBotButtons();
+        }
+    });
 
     let tracker;
     const trackerInput = propertiesContainer.getElementsByClassName('Tracker input')[0];
@@ -3036,7 +3126,9 @@ async function showModuleProperties(moduleElement, moduleInfo){
         trackerInput.disabled = true;
     }   
     trackerInput.value = null;
-    if (moduleInfo.trackerURI === 'DEFAULT'){
+    if (moduleInfo.trackerURI === 'CUSTOM'){
+        trackerInput.value = 'CUSTOM'
+    } else if (moduleInfo.trackerURI === 'DEFAULT'){
         trackerInput.value = 'DEFAULT'
     } else {
         const uriString = `${moduleInfo.trackerURI.backendIndex}-${moduleInfo.trackerURI.trackerId}`;
@@ -3047,7 +3139,12 @@ async function showModuleProperties(moduleElement, moduleInfo){
     trackerInput.addEventListener('change', () => {trackerInputChanged(); updateBotButtons()});
     function trackerInputChanged(){
         let trackerURI;
-        if (trackerInput.value === 'DEFAULT'){
+        if (trackerInput.value === 'CUSTOM'){
+            moduleInfo.trackerURI = 'CUSTOM';
+            trackerURI = 'CUSTOM';
+            setCustomTrackerIDVisibility(true);
+        } else if (trackerInput.value === 'DEFAULT'){
+            setCustomTrackerIDVisibility(false);
             moduleInfo.trackerURI = 'DEFAULT';
             const defaultTracker = TrackersManager.getTracker(currentDisplayedBot.defaultTrackerURI.backendIndex, currentDisplayedBot.defaultTrackerURI.trackerId); 
             if (!defaultTracker || (script.RESTRICT_TO_TRACKER_TYPES 
@@ -3057,6 +3154,7 @@ async function showModuleProperties(moduleElement, moduleInfo){
                 trackerURI = currentDisplayedBot.defaultTrackerURI;
             }
         } else {
+            setCustomTrackerIDVisibility(false);
             let [backendIndex, trackerId] = trackerInput.value ? trackerInput.value.split('-') : [null, null];
             if (backendIndex !== null){
                 backendIndex = Number(backendIndex);
@@ -3066,6 +3164,11 @@ async function showModuleProperties(moduleElement, moduleInfo){
         }
         
         updateModuleElementTrackerURI(currentDisplayedBot, moduleElement, moduleInfo);
+
+        if (trackerURI === 'CUSTOM'){
+            trackerInput.classList.remove('input-invalid');
+            return;
+        }
 
         tracker = TrackersManager.getTracker(trackerURI.backendIndex, trackerURI.trackerId);
        
@@ -3254,7 +3357,7 @@ async function showModuleProperties(moduleElement, moduleInfo){
     const codedTitle = script.getTitle(parameters).split('<br>').map(titleLine => Util.htmlEncode(titleLine)).join('<br>');
     moduleElement.getElementsByClassName('bot-module-info-container')[0].firstElementChild.innerHTML = codedTitle;
     checkModuleParameters(parameters);
-    if (trackerInput.value !== 'DEFAULT' || errorGotoInput.value !== 'DEFAULT'
+    if ((trackerInput.value !== 'CUSTOM' && trackerInput.value !== 'DEFAULT') || errorGotoInput.value !== 'DEFAULT'
     || trackerInput.classList.contains('input-invalid') || errorGotoInput.classList.contains('input-invalid')
     || statementsNonEmpty){
         toggleShowAdvancedPropertiesOn();
@@ -3383,23 +3486,28 @@ function updateBotButtons(){
                 return;
             }
 
-            let trackerURI;
-            if (moduleInfo.trackerURI === 'DEFAULT'){
-                const script = ScriptModules.modules[moduleInfo.type];
-                const defaultTracker = TrackersManager.getTracker(selectedBot.defaultTrackerURI.backendIndex, selectedBot.defaultTrackerURI.trackerId); 
-                if (script.RESTRICT_TO_TRACKER_TYPES 
-                && !script.RESTRICT_TO_TRACKER_TYPES.includes(ScriptModuleCommon.getBackendName(defaultTracker.backendIndex))){
-                    trackerURI = {backendIndex: null, trackerId: null};
-                } else {
-                    trackerURI = selectedBot.defaultTrackerURI;
-                }
+            
+            if (moduleInfo.trackerURI === 'CUSTOM'){
+
             } else {
-                trackerURI =  moduleInfo.trackerURI
-            }
-            if (!TrackersManager.getTracker(trackerURI.backendIndex, trackerURI.trackerId)){
-                moduleElement.classList.add('input-invalid');
-                atLeastOneError = true;
-                return;
+                let trackerURI;
+                if (moduleInfo.trackerURI === 'DEFAULT'){
+                    const script = ScriptModules.modules[moduleInfo.type];
+                    const defaultTracker = TrackersManager.getTracker(selectedBot.defaultTrackerURI.backendIndex, selectedBot.defaultTrackerURI.trackerId); 
+                    if (script.RESTRICT_TO_TRACKER_TYPES 
+                    && !script.RESTRICT_TO_TRACKER_TYPES.includes(ScriptModuleCommon.getBackendName(defaultTracker.backendIndex))){
+                        trackerURI = {backendIndex: null, trackerId: null};
+                    } else {
+                        trackerURI = selectedBot.defaultTrackerURI;
+                    }
+                } else {
+                    trackerURI =  moduleInfo.trackerURI
+                }
+                if (!TrackersManager.getTracker(trackerURI.backendIndex, trackerURI.trackerId)){
+                    moduleElement.classList.add('input-invalid');
+                    atLeastOneError = true;
+                    return;
+                }
             }
 
             if (moduleInfo.customParameters.some(parameter => !parameter.valid && parameter.visible)){

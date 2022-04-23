@@ -54,6 +54,8 @@ export function addTracker(backendIndex, args){
     return Addtracker.addTracker(backendIndex, args, false);
 }
 
+
+
 export function validateExpression({expression, allowEmpty, allowPercentage}){
     expression = expression.trim();
     if (expression.endsWith('%')){
@@ -275,7 +277,7 @@ export function getModuleInstance(){
     let rowLabels;
     let outerRowIndex;
 
-    let callbackTicketToReceivedDataCapsuleIds;
+    let callbackTicketToReceivedDataCapsuleIds = {};
     
 
     const instance = {
@@ -287,21 +289,21 @@ export function getModuleInstance(){
 
         //these are called by bots.js. 
 
-        //the assumption is that references for pTracker, pLocalVariables and pRowResults remain valid over the life of the module
-        init: function(id, pTracker, pLocalVariables, pRowLabels, pOuterRowIndex, pRowResults){
+        //the assumption is that references for pLocalVariables and pRowResults remain valid over the life of the module
+        init: function(id, pLocalVariables, pRowLabels, pOuterRowIndex, pRowResults){
             moduleId = id;
-            tracker = pTracker;
             localVariables = pLocalVariables;
             rowLabels = pRowLabels;
             outerRowIndex = pOuterRowIndex;
             rowResults = pRowResults;
-            instance.tracker = tracker;
             if (initFunc){
                 initFunc(tracker);
             }
         },
 
-        activate: function(statementsBefore, auxillaryFunctions, pPreviousOuterRowIndex){
+        activate: function(trackerDerivationLines, pTracker, statementsBefore, auxillaryFunctions, pPreviousOuterRowIndex){
+            tracker = pTracker
+            instance.tracker = tracker;
             callbackTicketToReceivedDataCapsuleIds = {};
             instance.previousOuterRowIndex = pPreviousOuterRowIndex;
 
@@ -312,6 +314,14 @@ export function getModuleInstance(){
                 comparator: tracker.mostRecentPrice ? Number(tracker.mostRecentPrice.comparator) : 0, 
                 fiat: tracker.mostRecentPrice ? Number(tracker.mostRecentPrice.fiat) : 0
             }
+            for (let i = 0; i < trackerDerivationLines.length; ++i){
+                if (i === 0){
+                    instance.addOutputLineSilently("Custom tracker ID = " + trackerDerivationLines[i]);
+                } else {
+                    instance.addOutputLineSilently("                  = " + trackerDerivationLines[i]);
+                }
+            }
+           
             instance.addOutputLine(`Tracker: ${tracker.uriSignature}`);
             let entryPriceLine = `Entry price: ${p(entryPrices.comparator)} ${tracker.comparatorSymbol} / ${tracker.tokenSymbol}`;
             if (entryPrices.fiat){
@@ -463,7 +473,7 @@ export function getModuleInstance(){
             return callbackTicket;
         },
 
-
+        //be careful calling when not active- tracker may not be set / updated
         getEvaluation: function({expression, allowPercentage, isText}){
             let percentageSuffix = '';
             if (!isText && allowPercentage && expression.endsWith('%')){
@@ -478,7 +488,7 @@ export function getModuleInstance(){
                 if (substitutions.length){
                     derivationLines.push(substitutedString);
                 };
-                const currentPrice = tracker.mostRecentPrice ? Number(tracker.mostRecentPrice.comparator) : 0;
+                const currentPrice = (tracker && tracker.mostRecentPrice) ? Number(tracker.mostRecentPrice.comparator) : 0;
 
                 let stringValue;
                 if (isText){

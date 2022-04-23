@@ -105,7 +105,8 @@ export const expressionParser = (() => {
 
         [/[-+*/^()]|<|>|<=|>=|==/, lexeme => lexeme],
         
-        [/(?:\+|-)?[0-9]+(?:\.[0-9]+)?/, lexeme => lexeme],
+        /*will fail for "+1" so... just use 1 - otherwise, with '+' added to the rule here, we had "1+1" => ['1', '+1'] parse array*/
+        [/(?:-)?[0-9]+(?:\.[0-9]+)?/, lexeme => lexeme],
 
         [/\".*\"/, lexeme => lexeme], //strings
     ]
@@ -293,6 +294,7 @@ export const expressionParser = (() => {
     }
 
     function asNumber(a){
+        console.trace();
         if (typeof a === 'number'){
             return Big(a);
         }
@@ -336,6 +338,7 @@ export const expressionParser = (() => {
             "*": (a, b) => asNumber(a).times(b),
             "/": (a, b) => asNumber(a).div(b),
         };
+
 
         parsedArray.forEach(token => {
             switch (token) {

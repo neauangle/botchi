@@ -138,7 +138,9 @@ export function init(pBackendinfos, trackerUriStringsInOrder){
 export function getBackendInfo(backendIndex){
     return backendInfos[backendIndex];
 }
-
+export function getBackendNames(){
+    return Object.values(backendInfos).map(info => info.name);
+}
 
 export async function generalCallbackHandler(event, args){
     if (event === 'toolbar-action'){
@@ -191,9 +193,16 @@ export async function generalCallbackHandler(event, args){
 }
 
 
-
+export function getBackendIndex(backendName){
+    for (const backendIndex of Object.keys(backendInfos)){
+        if (backendInfos[backendIndex].name === backendName){
+            return backendIndex;
+        }
+    }
+}
 export function getTracker(backendIndex, trackerId){
     if (backendInfos && backendInfos[backendIndex]){
+        console.log(backendInfos[backendIndex].trackers)
         return backendInfos[backendIndex].trackers[trackerId];
     }
 }
