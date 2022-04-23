@@ -73,13 +73,11 @@ export function validateStatements(statementsText, allowEmpty){
     }
     const lines =statementsText.split('\n');
     for (const line of lines){
-        let expression;
+        let expression = line;
         const assignmentTokenMatch = line.match(ASSIGNMENT_TOKEN_REGEX);
         if (assignmentTokenMatch){
             expression = line.slice(assignmentTokenMatch.index + assignmentTokenMatch[0].length);
-        } else {
-            return false;
-        }
+        } 
         if (!validateExpression({expression, allowPercentage: false, allowEmpty: false})){
            return false;
         }
@@ -520,16 +518,21 @@ export function getModuleInstance(){
                 }
                 let variableToSet;
                 let expression;
+                let useTextLexer = false;
                 const assignmentTokenMatch = line.match(ASSIGNMENT_TOKEN_REGEX);
-                if (!assignmentTokenMatch){
+                if (assignmentTokenMatch){
+                    
+                    expression = line.slice(assignmentTokenMatch.index + assignmentTokenMatch[0].length);
+                    variableToSet = assignmentTokenMatch[2];
+                    const assignmentOperator = assignmentTokenMatch[3];
+                    useTextLexer = assignmentOperator === ':=';
+                } else if (false){
                     instance.finishWithError('Invalid expression: no assignment token');
                     return {error: 'Invalid expression: no assignment token', value: null};
+                } else {
+                    expression = line;
                 }
-                expression = line.slice(assignmentTokenMatch.index + assignmentTokenMatch[0].length);
-        
-                variableToSet = assignmentTokenMatch[2];
-                const assignmentOperator = assignmentTokenMatch[3];
-                const useTextLexer = assignmentOperator === ':=';
+                
                 const {derivationLines, stringValue, error} = instance.getEvaluation({expression, isText: useTextLexer});
                 if (error){
                     return {error, value: null};
@@ -540,24 +543,30 @@ export function getModuleInstance(){
                     is more intuitive.
                 */
                 resultValue = stringValue;
-                if (assignmentTokenMatch[1].toUpperCase() === 'G'){
-                    if (retDict !== localVariables){
-                        instance.finishWithError("Error: Inappropriate time to set global variable " + variableToSet);
-                        return {error: "Error: Inappropriate time to set global variable " + variableToSet, value: null};
+                let prefix = '';
+                if (assignmentTokenMatch){
+                    if (assignmentTokenMatch[1].toUpperCase() === 'G'){
+                        if (retDict !== localVariables){
+                            instance.finishWithError("Error: Inappropriate time to set global variable " + variableToSet);
+                            return {error: "Error: Inappropriate time to set global variable " + variableToSet, value: null};
+                        }
+                        if (!Globals.globalExists(variableToSet)){
+                            instance.finishWithError("Error: Global does not exist: " + variableToSet);
+                            return {error: "Error: Global does not exist: " + variableToSet, value: null};
+                        }
+                        Globals.setGlobal(variableToSet, stringValue);
+                    } else {
+                        retDict[variableToSet] = stringValue;
                     }
-                    if (!Globals.globalExists(variableToSet)){
-                        instance.finishWithError("Error: Global does not exist: " + variableToSet);
-                        return {error: "Error: Global does not exist: " + variableToSet, value: null};
-                    }
-                    Globals.setGlobal(variableToSet, stringValue);
+                    instance.addOutputLineSilently(`${outputPrefix}$${assignmentTokenMatch[1]}.${assignmentTokenMatch[2]} ${assignmentOperator} ${expression}`);
+                    prefix = ' '.repeat( variableToSet.length + 4) + `${outputPrefix}${tabSpaces}${assignmentOperator} `;
                 } else {
-                    retDict[variableToSet] = stringValue;
+                    instance.addOutputLineSilently(`${expression}`);
+                    prefix = '= ';
                 }
                 
-                instance.addOutputLineSilently(`${outputPrefix}$${assignmentTokenMatch[1]}.${assignmentTokenMatch[2]} ${assignmentOperator} ${expression}`);
-                const tabSpaces = ' '.repeat( variableToSet.length + 4);
                 for (let i = 0; i < derivationLines.length; ++i){
-                    instance.addOutputLineSilently(`${outputPrefix}${tabSpaces}${assignmentOperator} ${derivationLines[i]}`);
+                    instance.addOutputLineSilently(`${prefix}${derivationLines[i]}`);
                 }
                 instance.emitOutputLines();
             }
