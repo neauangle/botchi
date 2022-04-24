@@ -47,7 +47,7 @@ export const EVENTS = {
     SET_GOTO: "SET_GOTO",
 }
 
-export const ASSIGNMENT_TOKEN_REGEX = /(?:^|\n)\$(V|G)\.([a-zA-Z][_a-zA-Z0-9]*)\s*(=|:=)\s*/i; 
+export const ASSIGNMENT_TOKEN_REGEX = /(?:^|\n)\$(V|G)\.([a-zA-Z][_a-zA-Z0-9]*)\s*(=|:=)\s*(?=[^=])/i; 
 export const VARIABLE_NAME_REGEX = /[a-zA-Z][_a-zA-Z0-9]*/i; 
 
 export function addTracker(backendIndex, args){
@@ -500,6 +500,9 @@ export function getModuleInstance(){
                 return {derivationLines, stringValue, percentageSuffix, error: false};
 
             } catch (error) {
+                console.log(expression);
+                console.trace();
+                throw error;
                 instance.finishWithError(`${error}`);
                 return {derivationLines: null, percentageSuffix: null, stringValue: null, error};
             }
@@ -558,8 +561,9 @@ export function getModuleInstance(){
                     } else {
                         retDict[variableToSet] = stringValue;
                     }
+                    const assignmentOperator = assignmentTokenMatch[3];
                     instance.addOutputLineSilently(`${outputPrefix}$${assignmentTokenMatch[1]}.${assignmentTokenMatch[2]} ${assignmentOperator} ${expression}`);
-                    prefix = ' '.repeat( variableToSet.length + 4) + `${outputPrefix}${tabSpaces}${assignmentOperator} `;
+                    prefix = outputPrefix + ' '.repeat( variableToSet.length + 4) + `${assignmentOperator} `;
                 } else {
                     instance.addOutputLineSilently(`${expression}`);
                     prefix = '= ';
@@ -570,6 +574,7 @@ export function getModuleInstance(){
                 }
                 instance.emitOutputLines();
             }
+
             return {error: null, result: resultValue};
         },
         

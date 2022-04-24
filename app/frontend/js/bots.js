@@ -1693,7 +1693,8 @@ async function startBot(bot, startingAtOuterRow = 0, initialVariables={}){
             nextOuterRowIndex = startingAtOuterRow;
             moduleInfosToActivate = botInstance.outerRows[nextOuterRowIndex].innerRows[0];
         } else {
-            const {error, result, resultKey, moduleId} = args;
+            const {result, resultKey, moduleId} = args;
+            let error = args.error;
             const doneModuleInfo = moduleIdToModuleInfo[moduleId];
             previousOuterRowIndex = doneModuleInfo.outerRowIndex;
             const doneTracker = doneModuleInfo.tracker;
@@ -3167,11 +3168,18 @@ async function showModuleProperties(moduleElement, moduleInfo){
 
         if (trackerURI === 'CUSTOM'){
             trackerInput.classList.remove('input-invalid');
-            return;
+            tracker = {
+                id: 'CUSTOM',
+                tokenSymbol: 'TOKEN',
+                comparatorSymbol: 'COMPARATOR',
+                tokenDecimals: 10,
+                comparatorDecimals: 10
+            }
+        } else {
+            tracker = TrackersManager.getTracker(trackerURI.backendIndex, trackerURI.trackerId);
         }
 
-        tracker = TrackersManager.getTracker(trackerURI.backendIndex, trackerURI.trackerId);
-       
+        
         if (tracker){
             trackerInput.classList.remove('input-invalid');
             //if no tracker, the params might not reflect NO tracker but it doesn't matter because the whole module's invalid

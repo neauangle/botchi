@@ -94,10 +94,6 @@ export async function updateParameterMetaSettings(parameters, changedParameterIn
 export function getInstance(customParameters){
     const instance = ScriptModuleCommon.getModuleInstance();
 
-    const init = function(){
-        
-    }
-
     const activate = async function(priceOnActivation, taskRowIndex, rowResults, localVariabless, tracker){
         const backendIndex = ScriptModuleCommon.getBackendIndex('ethers');
         const endpointName = customParameters[API_PARAM_INDEX].value;
@@ -108,8 +104,40 @@ export function getInstance(customParameters){
             return;
         }
 
-        const tokenAddress = customParameters[TOKEN_ADDRESS_PARAM_INDEX].value;
-        const comparatorAddress = customParameters[COMPARATOR_ADDRESS_PARAM_INDEX].value;
+
+
+        let tokenAddress;
+        {
+            const {derivationLines, percentageSuffix, stringValue, error} = instance.getEvaluation({
+                expression: customParameters[TOKEN_ADDRESS_PARAM_INDEX].value,
+                isText: true
+            });
+            if (error){
+                return;
+            }
+            tokenAddress = stringValue;
+            instance.addOutputLine(`Token address: ${customParameters[TOKEN_ADDRESS_PARAM_INDEX].value}`);
+            for (let i = 0; i < derivationLines.length; ++i){
+                instance.addOutputLine(`Token address: ${derivationLines[i]}`);
+            }
+        }
+        let comparatorAddress;
+        {
+            const {derivationLines, percentageSuffix, stringValue, error} = instance.getEvaluation({
+                expression: customParameters[COMPARATOR_ADDRESS_PARAM_INDEX].value,
+                isText: true
+            });
+            if (error){
+                return;
+            }
+            comparatorAddress = stringValue;
+            instance.addOutputLine(`Comparator address: ${customParameters[COMPARATOR_ADDRESS_PARAM_INDEX].value}`);
+            for (let i = 0; i < derivationLines.length; ++i){
+                instance.addOutputLine(`Comparator address: ${derivationLines[i]}`);
+            }
+
+        }
+
         const comparatorIsFiat = customParameters[COMPARATOR_IS_FIAT_PARAM_INDEX].value;
         const updateMethod = customParameters[UPDATE_METHOD_PARAM_INDEX].value === "Swaps" ? "SWAPS" : "POLL";
         const pollIntervalSeconds = updateMethod === "SWAPS" ? null : Number(customParameters[POLLING_INTERVAL_SECONDS_PARAM_INDEX].value);
@@ -136,7 +164,7 @@ export function getInstance(customParameters){
     }
 
 
-    instance.registerFunctions({init, activate});
+    instance.registerFunctions({activate});
 
     return instance;
 

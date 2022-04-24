@@ -1110,9 +1110,15 @@ async function getBalance({tokenAddress, walletAddress, callbackTicket, endpoint
     const endpointJS = idToJS[endpointNode.id];
     const tokenContract = ABI.createTokenContract(endpointJS.provider, tokenAddress);
     const isEthToken = tokenAddress.toLowerCase() == endpointNode.ethTokenAddress.toLowerCase();
-    const getBalanceFunc = () => {
+    const getBalanceFunc = async () => {
         if (isEthToken){
-            return endpointJS.sendOne(endpointJS.provider, 'getBalance', walletAddress);
+            const amount = await endpointJS.sendOne(endpointJS.provider, 'getBalance', walletAddress);
+            console.log('amount', amount)
+            //0 might be because this is a contract (e.g. LP) and for some reason you need to use balanceOf for those
+            if (!amount.isZero()){
+                return amount;
+            }
+            return endpointJS.sendOne(tokenContract, 'balanceOf', walletAddress);
         } else {
             return endpointJS.sendOne(tokenContract, 'balanceOf', walletAddress);
         }

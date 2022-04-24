@@ -103,7 +103,7 @@ export const expressionParser = (() => {
     const expressionRules = [
         [/\s+/, (lexeme) => {/* skip whitespace */}],
 
-        [/[-+*/^()]|<|>|<=|>=|==/, lexeme => lexeme],
+        [/[-+*/^()]|<|>|<=|>=|==|!=/, lexeme => lexeme],
         
         /*will fail for "+1" so... just use 1 - otherwise, with '+' added to the rule here, we had "1+1" => ['1', '+1'] parse array*/
         [/(?:-)?[0-9]+(?:\.[0-9]+)?/, lexeme => lexeme],
@@ -197,6 +197,7 @@ export const expressionParser = (() => {
         lexer.setInput(input);
         var tokens = [], token;
         while (token = lexer.lex()) { 
+            console.log(token);
             if (token.startsWith('"')){
                 token = token.slice(1, -1);
             }
@@ -289,12 +290,12 @@ export const expressionParser = (() => {
         if (!isText && substitutedString.endsWith(' ')){
             substitutedString = substitutedString.slice(0, -1);
         }
+        console.log('here', input);
         substitutedString = isReturningSubstitutedString ? substitutedString : input;
         return {parsedArray: parser.parse(tokens), substitutedString, substitutions};
     }
 
     function asNumber(a){
-        console.trace();
         if (typeof a === 'number'){
             return Big(a);
         }
@@ -307,26 +308,33 @@ export const expressionParser = (() => {
         return a;
     }
 
+    const testEqual = (a, b) => {
+            try {
+                a = Big(a);
+            } catch {
+               //failed to turn a into big number - will treat as string comparison
+            }
+            if (typeof a.eq === 'function'){
+                return a.eq(b) ? 1 : 0
+            } else if (typeof a === 'string'){
+                return a.toString().toUpperCase() === b.toString().toUpperCase() ? 1 : 0;
+            } else {
+                return a === b ? 1 : 0
+            }
+        }
+
     function evaluate(parsedArray, currentPrice, rowOutputs, localVariables, tracker, rowLabels, outerRowIndex){
         const stack = [];
+
+        
 
         const operator = {
             "<": (a, b) => asNumber(a).lt(b) ? 1 : 0,
             "<=": (a, b) => asNumber(a).lte(b) ? 1 : 0,
             ">": (a, b) => asNumber(a).gt(b) ? 1 : 0,
             ">=": (a, b) => asNumber(a).gte(b) ? 1 : 0,
-            "==": (a, b) => { 
-                try {
-                    a = Big(a);
-                } catch {
-                   //failed to turn a into big number - will treat as string comparison
-                }
-                if (typeof a.eq === 'function'){
-                    return a.eq(b) ? 1 : 0
-                } else {
-                    return a === b ? 1 : 0
-                }
-            },
+            "==": testEqual,
+            "!=": (a, b) => testEqual(a,b) === 1 ? 0 : 1,
 
             "^": (a, b) => {
                 return asNumber(a).pow(Number(b));
@@ -347,6 +355,7 @@ export const expressionParser = (() => {
             case "<=":
             case ">=":
             case "==":
+            case "!=":
             case "+":
             case "-":
             case "*":
@@ -354,6 +363,7 @@ export const expressionParser = (() => {
             case "^":
                 var b = stack.pop();
                 var a = stack.pop();
+                console.log('here', operator[token](a, b));
                 stack.push(operator[token](a, b));
                 break;
             default:
@@ -429,8 +439,10 @@ export const expressionParser = (() => {
         //handles e.g. $p - $p which would otherwise result in a stack of [$p, -$p] at the end 
         //because it will treat the - as part of the second $p rather than an operator.
         let result = Big(0);
+        console.log('stack', stack)
         while (stack.length){
             const pop = stack.pop();
+            
             result = result.plus(asNumber(pop));
         }
         const asString = result.toFixed(20);

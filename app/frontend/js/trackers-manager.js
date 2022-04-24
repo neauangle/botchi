@@ -202,7 +202,6 @@ export function getBackendIndex(backendName){
 }
 export function getTracker(backendIndex, trackerId){
     if (backendInfos && backendInfos[backendIndex]){
-        console.log(backendInfos[backendIndex].trackers)
         return backendInfos[backendIndex].trackers[trackerId];
     }
 }
