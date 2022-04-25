@@ -103,6 +103,8 @@ export const expressionParser = (() => {
     const expressionRules = [
         [/\s+/, (lexeme) => {/* skip whitespace */}],
 
+        [/<=|>=/, lexeme => lexeme],
+
         [/[-+*/^()]|<|>|<=|>=|==|!=/, lexeme => lexeme],
         
         /*will fail for "+1" so... just use 1 - otherwise, with '+' added to the rule here, we had "1+1" => ['1', '+1'] parse array*/
@@ -159,7 +161,6 @@ export const expressionParser = (() => {
         "<=": comparison, 
         ">=": comparison, 
         "!=": comparison, 
-        "===": comparison,
         "==": comparison,
 
         "+": term,
